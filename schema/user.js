@@ -1,5 +1,5 @@
 
-const typeDefs = `#graphql
+export const typeDefs = `#graphql
     type User {
         _id : ID 
         email : String
@@ -33,3 +33,13 @@ const typeDefs = `#graphql
         loginUser(login : Login) : Token
     }
 `
+
+export const resolvers = {
+    Query : {
+
+    },
+    Mutation : {
+
+    }
+};
+
