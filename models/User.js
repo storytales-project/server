@@ -14,7 +14,5 @@ export default class User {
 
     static async loginUser(login) {
 
-    }
-
-    
-}
+    }    
+};
