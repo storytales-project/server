@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-import { MongoClient, ServerApiVersion } from "mongodb";
+const { MongoClient, ServerApiVersion } = require("mongodb");
 
 const uri = process.env.MONGODB_URI;
 const client = new MongoClient(uri, {
@@ -11,4 +11,6 @@ const client = new MongoClient(uri, {
     },
 });
 
-export const database = client.db("storytales")
+const database = client.db("storytales")
+
+module.exports = { database }
