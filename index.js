@@ -3,6 +3,7 @@ const { ApolloServer } = require("@apollo/server");
 const { startStandaloneServer } = require("@apollo/server/standalone");
 const { GraphQLError } = require("graphql");
 const { typeDefs: typeDefsUser, resolvers: resolversUser } = require("./schema/user");
+const { typeDefs : typeDefsStory, resolvers : resolversStory } = require("./schema/story");
 const { database } = require("./config/mongodb");
 const { verifyToken } = require("./helpers/jwt");
 

@@ -1,6 +1,7 @@
 const { database } = require("../config/mongodb");
 const { ObjectId } = require("mongodb");
 const { hashPassword, validatePassword } = require("../helpers/bcrypt");
+const { createToken } = require("../helpers/jwt");
 
 class User {
     static collection() {
@@ -47,7 +48,8 @@ class User {
         const user = await this.collection().insertOne({
             email,
             username,
-            password
+            password,
+            credit : 0
         });
 
         return {
@@ -61,13 +63,23 @@ class User {
     
         const user = await this.collection().findOne({ username });
 
-        console.log(password, user.password)
-    
-        if (user && validatePassword(password, user.password)) {
-            return user;
-        } else {
-            throw new Error('Invalid username or password');
+        if (!user) {
+            throw new Error("User not registered")
+        };
+
+        const isValidPassword = validatePassword(password, user.password);
+
+        if (!isValidPassword) {
+            throw new Error("Invalid password")
         }
+
+        const token = createToken({
+            _id : user._id
+        });
+
+        return {
+            access_token : token
+        };
     }
 }
 
