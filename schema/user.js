@@ -40,7 +40,7 @@ const typeDefs = `#graphql
 
 const resolvers = {
     Query : {
-            getUserById: async (_, args) => {
+        getUserById: async (_, args) => {
             try {
                 const user = await User.findById(args.id);
                 return user;
