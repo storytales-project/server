@@ -1,15 +1,17 @@
-import jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken");
 
 const secret = process.env.SECRET_JWT_CODE;
 
-export const createToken = (payload) => {
+const createToken = (payload) => {
     const token = jwt.sign(payload, secret);
 
     return token;
 };
 
-export const verifyToken = (token) => {
+const verifyToken = (token) => {
     const payload  = jwt.verify(token, secret);
 
     return payload;
 };
+
+module.exports = { createToken, verifyToken }
