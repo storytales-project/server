@@ -9,10 +9,13 @@ class User {
     }
 
     static async findById(id) {
+        const userId = new ObjectId(String(id));
+        console.log(userId);
+
         const user = await this.collection().aggregate([
             {
                 '$match': {
-                    '_id': new ObjectId(id)
+                    '_id': userId
                 }
             },
             {
@@ -30,7 +33,7 @@ class User {
             }
         ]).toArray();
 
-        return user;
+        return user[0];
     }
 
     static async findByUsername(username) {

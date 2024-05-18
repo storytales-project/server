@@ -1,3 +1,4 @@
+const Story = require('../models/Story');
 
 const typeDefs = `#graphql
     type Like {
@@ -8,17 +9,23 @@ const typeDefs = `#graphql
         updatedAt : String
     }
 
+    type Page {
+        chapter : String
+        content : String
+        audio : String
+        choices : [String]
+    }
+
     type Story {
         _id : ID
         title : String
-        content : String
-        audio : String
         image : String
+        pages : [Page]
         character : String
         mood : String
         likes : [Like]
         public : Boolean
-        themeId : String
+        theme : String
         userId : String
     }
 
@@ -34,6 +41,12 @@ const typeDefs = `#graphql
         mood : String
         theme : String
         title : String
+        language : String
+    }
+
+    input storyPick {
+        storyId : ID
+        pick : String
     }
 
     input NewLike {
@@ -42,12 +55,33 @@ const typeDefs = `#graphql
 
     type Mutation {
         addStory(newStory : NewStory) : Story
+        continueStory(pick : storyPick) : Story
         addLike(newLike : NewLike) : Like
     }
-`
+`;
 
 const resolvers = {
+    Mutation: {
+        addStory : async (_, args, contextValue) => { 
+            const user = await contextValue.authentication();
+            const {newStory} = args;
 
+            if (!user) {
+                throw new Error("You must login first!")
+            }
+
+
+            if (!newStory.character || !newStory.mood || !newStory.theme || !newStory.title || !newStory.language) {
+                throw new Error("You must fill all the content!")
+            };
+
+            newStory.userId = user._id;
+
+            const result = await Story.addStory(newStory);
+
+            return result;
+        }   
+    },
 };
 
-module.exports = {typeDefs, resolvers};
+module.exports = { typeDefs, resolvers };

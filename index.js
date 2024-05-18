@@ -6,10 +6,11 @@ const { typeDefs: typeDefsUser, resolvers: resolversUser } = require("./schema/u
 const { typeDefs : typeDefsStory, resolvers : resolversStory } = require("./schema/story");
 const { database } = require("./config/mongodb");
 const { verifyToken } = require("./helpers/jwt");
+const User = require('./models/User');
 
 const server = new ApolloServer({
-    typeDefs: [typeDefsUser],
-    resolvers: [resolversUser],
+    typeDefs: [typeDefsUser, typeDefsStory],
+    resolvers: [resolversUser, resolversStory],
     introspection: true
 })
 
@@ -32,7 +33,9 @@ startStandaloneServer(server, {
                 const token = access_token.split(" ")[1];
                 const payload = verifyToken(token);
 
-                return payload;
+                const user = await User.findById(payload._id);
+
+                return user;
             }
         }
     }
