@@ -33,7 +33,7 @@ const typeDefs = `#graphql
         getMyStories : [Story]
         getPublicStories : [Story]
         getFavouriteStories : [Story]
-        getStoryById : Story
+        getStoryById(id : ID) : Story
     }
 
     input NewStory {
@@ -61,6 +61,15 @@ const typeDefs = `#graphql
 `;
 
 const resolvers = {
+    Query : {
+        getStoryById : async (_, args) => {
+            const {id} = args;
+
+            const story = await Story.getById(id);
+
+            return story;
+        }
+    },
     Mutation: {
         addStory : async (_, args, contextValue) => { 
             const user = await contextValue.authentication();
@@ -80,7 +89,12 @@ const resolvers = {
             const result = await Story.addStory(newStory);
 
             return result;
-        }   
+        },
+        continueStory : async (_, args, contextValue) => {
+            const user = await contextValue.authentication();
+
+            console.log(args);
+        }
     },
 };
 

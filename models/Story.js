@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { database } = require("../config/mongodb");
 const { generateStory } = require("../helpers/openai");
 
@@ -5,6 +6,14 @@ class Story {
     static collection() {
         return database.collection('stories');
     };
+
+    static async getById(id) {
+        const story = await this.collection().findOne({
+            _id : new ObjectId(String(id))
+        });
+
+        return story;
+    }
 
     static async addStory(newStory) {
         const stories = this.collection();
@@ -38,6 +47,10 @@ class Story {
         insert._id = result.insertedId;
 
         return insert;
+    }
+
+    static async continueStory() {
+
     }
 };
 
