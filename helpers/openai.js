@@ -90,6 +90,62 @@ async function generateStory(input) {
         audioURL,
         imageURL
     };
+};
+
+async function continueStory(pick, pages) {
+    const currentStory = pages.reduce((accumulator, current) => {
+        return accumulator + current.content + " ";
+    }, "").trim();
+
+    const currentPage = pages[pages.length - 1];
+
+    const {choices} = currentPage;
+    const stringified = JSON.stringify(choices);
+
+    let prompt;
+
+    if (pages.length < 2) {
+        prompt = `Based on this story : ${currentStory}. there are multiple choices to continue the story : ${stringified}, please continue the story based on this pick : ${pick.choice}, Please give a response in these format {story : string of continued stories, chapter : string of chapter name that could fit the story, choices : array of string}`
+    } else {
+        prompt = `Based on this story : ${currentStory}. there are multiple choices to continue the story : ${stringified}, please end the story based on this pick : ${pick.choice}, Please give a response in these format {story : string of continued stories, chapter : string of chapter name that could fit the story, choices = []}`
+    }
+
+    const completion = await openai.chat.completions.create({
+        messages: [{ role: "system", content: prompt }],
+        model: "gpt-4-turbo",
+    });
+
+    const result = completion.choices[0].message.content;
+    const parsed = JSON.parse(result);
+
+    const story = parsed.story;
+
+    console.log(story);
+
+    const speechFile = path.resolve("./tempaudio.mp3");
+    const mp3 = await openai.audio.speech.create({
+        model: "tts-1",
+        voice: "nova",
+        input: story,
+    });
+
+    const buffer = Buffer.from(await mp3.arrayBuffer());
+    await fs.promises.writeFile(speechFile, buffer);
+
+    const audioUpload = await cloudinary.uploader.upload(speechFile, {
+        resource_type: "video",
+    });
+
+    fs.unlinkSync(speechFile);
+
+    const audioURL = audioUpload.url;    
+
+    return {
+        chapter : parsed.chapter,
+        content : parsed.story,
+        audio : audioURL,
+        choices : parsed.choices
+    };
 }
 
-module.exports = { generateStory };
+module.exports = { generateStory, continueStory };

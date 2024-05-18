@@ -46,7 +46,7 @@ const typeDefs = `#graphql
 
     input storyPick {
         storyId : ID
-        pick : String
+        choice : String
     }
 
     input NewLike {
@@ -55,7 +55,7 @@ const typeDefs = `#graphql
 
     type Mutation {
         addStory(newStory : NewStory) : Story
-        continueStory(pick : storyPick) : Story
+        continueStory(pick : storyPick) : Page
         addLike(newLike : NewLike) : Like
     }
 `;
@@ -91,9 +91,14 @@ const resolvers = {
             return result;
         },
         continueStory : async (_, args, contextValue) => {
+            // Nanti tambahin authorization
             const user = await contextValue.authentication();
 
-            console.log(args);
+            const {pick} = args;
+
+            const result = await Story.continueStory(pick);
+
+            return result;
         }
     },
 };

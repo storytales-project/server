@@ -1,6 +1,6 @@
 const { ObjectId } = require("mongodb");
 const { database } = require("../config/mongodb");
-const { generateStory } = require("../helpers/openai");
+const { generateStory, continueStory } = require("../helpers/openai");
 
 class Story {
     static collection() {
@@ -49,8 +49,30 @@ class Story {
         return insert;
     }
 
-    static async continueStory() {
+    static async continueStory(pick) {
+        const stories = this.collection();
+        const story = await this.getById(pick.storyId);
+        const pages = story.pages;
 
+        const newPage = await continueStory(pick, pages);
+
+        console.log(newPage);
+
+        const result = await stories.updateOne(
+            {_id : story._id},
+            {
+                $push : {
+                    pages : {
+                        chapter : newPage.chapter,
+                        content : newPage.content,
+                        audio : newPage.audio,
+                        choices : newPage.choices
+                    }
+                }
+            }
+        );
+
+        return newPage;
     }
 };
 
