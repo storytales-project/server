@@ -68,6 +68,18 @@ const resolvers = {
             const story = await Story.getById(id);
 
             return story;
+        },
+        getPublicStories : async () => {
+            const stories = await Story.getPublic();
+
+            return stories;
+        },
+        getMyStories : async (_, args, contextValue) => {
+            const user = await contextValue.authentication();
+
+            const stories = await Story.getOwned(user._id);
+
+            return stories;
         }
     },
     Mutation: {
