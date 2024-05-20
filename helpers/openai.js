@@ -104,6 +104,10 @@ async function continueStory(pick, pages) {
 
     let prompt;
 
+    if (pages.length === 3) {
+        throw new Error("Story has ended");
+    }
+
     if (pages.length < 2) {
         prompt = `Based on this story : ${currentStory}. there are multiple choices to continue the story : ${stringified}, please continue the story based on this pick : ${pick.choice}, Please give a response in these format {story : string of continued stories, chapter : string of chapter name that could fit the story, choices : array of string}`
     } else {

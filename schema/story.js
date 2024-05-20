@@ -4,7 +4,6 @@ const typeDefs = `#graphql
     type Like {
         userId : ID
         username : String
-        storyId : ID
         createdAt : String
         updatedAt : String
     }
@@ -49,14 +48,10 @@ const typeDefs = `#graphql
         choice : String
     }
 
-    input NewLike {
-        postId : ID
-    }
-
     type Mutation {
         addStory(newStory : NewStory) : Story
         continueStory(pick : storyPick) : Page
-        addLike(newLike : NewLike) : Like
+        addLike(postId : ID) : Like
     }
 `;
 
@@ -111,6 +106,15 @@ const resolvers = {
             const result = await Story.continueStory(pick);
 
             return result;
+        },
+        addLike : async (_, args, contextValue) => {
+            const user = await contextValue.authentication();
+            
+            const {postId} = args;
+
+            const newLike = await Story.addLike(user, postId);
+
+            return newLike;
         }
     },
 };

@@ -105,6 +105,29 @@ class Story {
         );
 
         return newPage;
+    };
+
+    static async addLike(user, postId) {
+        const stories = this.collection();
+        const story = await this.getById(postId);
+
+        const newLike = {
+            userId : user._id,
+            username : user.username,
+            createdAt : new Date(),
+            updatedAt : new Date()
+        };
+
+        const result = await stories.updateOne(
+            {_id : story._id},
+            {
+                $push : {
+                    likes : newLike
+                }
+            }
+        );
+
+        return newLike;
     }
 }
 
