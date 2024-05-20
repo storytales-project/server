@@ -1,7 +1,9 @@
-const { GraphQLError }  = require("graphql");
+const { GraphQLError } = require("graphql");
 const User = require("../models/User");
 const { hashPassword, validatePassword } = require("../helpers/bcrypt");
 const { createToken } = require("../helpers/jwt");
+const midtransClient = require('midtrans-client');
+const Transaction = require("../models/Transaction");
 
 const typeDefs = `#graphql
     type User {
@@ -26,17 +28,25 @@ const typeDefs = `#graphql
         password : String
     }
 
+    input TopUpCredit {
+        credit : Int
+    }
+
     type Query {
         getUserById(id : ID) : User
         getUserByUsername(username : String) : User
         getUserByEmail(email : String) : User
+        getProfile : User
     }
 
     type Mutation {
         addUser(newUser : NewUser) : User
         loginUser(login : Login) : Token
+        updateProfile(userId : ID, profile : NewUser) : User
+        topUpCredit : String
+        logoutUser(userId : ID) : String
     }
-`
+`;
 
 const resolvers = {
     Query : {
@@ -65,10 +75,19 @@ const resolvers = {
             } catch (error) {
                 throw error
             }
+        },
+        
+        getProfile: async () => {
+            try {
+                const user = await User.getProfile();
+                return user
+            } catch (error) {
+                throw error
+            }
         }
     },
 
-    Mutation : {
+    Mutation: {
         addUser: async (_, args) => {
             try {
                 const { email, username, password } = args.newUser;
@@ -148,9 +167,72 @@ const resolvers = {
                     }
                 });
             }
+        },
+
+        updateProfile: async (_, args) => {
+            try {
+                const { userId, profile } = args;
+                const user = await User.updateProfile(userId, profile);
+                return user;
+            } catch (error) {
+                throw error
+            }
+        },
+
+        topUpCredit: async (_, args, contextValue) => {
+
+            // 1. ambil userId dari headers
+            // 2. masukan transaction ke database(userId, amount, status)
+            // 3. id dari poin kedua kirim ke midtrans sebagai ordet_id
+            // 4. return redirectUrl
+
+            let snap = new midtransClient.Snap({
+                isProduction: false,
+                serverKey: process.env.MIDTRANS_SERVER_KEY,
+                clientKey: process.env.MIDTRANS_CLIENT_KEY
+            });
+        
+            const user = await contextValue.authentication();
+
+            const userId = user._id;
+
+            const newTransaction = { userId, amount: 50000, status: "unpaid"}
+
+            const transaction = await Transaction.addTransaction(newTransaction);
+
+            const orderId = transaction.insertedId;
+        
+            if (!transaction) {
+                throw new Error("Transaction not found");
+            }
+        
+            let parameter = {
+                "transaction_details": {
+                    "order_id": orderId,
+                    "gross_amount": newTransaction.amount
+                },
+                "credit_card": {
+                    "secure": true
+                }
+            };
+        
+            const createdTransaction = await snap.createTransaction(parameter);
+            console.log("Success", createdTransaction);
+            let redirectUrl = createdTransaction.redirect_url;
+            console.log('redirectUrl:', redirectUrl);
+        
+            return redirectUrl;
+        },
+
+        logoutUser: async (_, args) => {
+            try {
+                const user = await User.logoutUser(args.userId);
+                return user;
+            } catch (error) {
+                throw error
+            }
         }
     }
 };
 
 module.exports = { typeDefs, resolvers };
-

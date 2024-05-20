@@ -84,6 +84,42 @@ class User {
             access_token : token
         };
     }
+
+    static async updateProfile(userId, profile) {
+        const result = await this.collection().updateOne(
+            { _id: new ObjectId(String(userId)) },
+            { $set: profile }
+        );
+
+        return result.modifiedCount > 0;
+    }
+
+    static async topUpCredit(userId, amount) {
+        const result = await this.collection().updateOne(
+            { _id: new ObjectId(String(userId)) },
+            { $inc: { credit: amount } }
+        );
+
+        return result.modifiedCount > 0;
+    }
+
+    static async findByIdAndUpdate(userId, updateData) {
+        const result = await this.collection().updateOne(
+            { _id: new ObjectId(String(userId)) },
+            { $set: updateData }
+        );
+
+        return result.modifiedCount > 0;
+    }
+
+    static async logoutUser(userId) {
+        const result = await this.collection().updateOne(
+          { _id: new ObjectId(String(userId)) },
+          { $set: { access_token: null } }
+        );
+      
+        return result.modifiedCount > 0;
+      }
 }
 
 module.exports = User;
