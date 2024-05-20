@@ -24,6 +24,9 @@ const server = new ApolloServer({
         ApolloServerPluginDrainHttpServer({ httpServer }),
     ]
 })
+
+app.use(express.json())
+app.use('/payment', midtrans)
 server.start().then(() => {
     app.use('/graphql', cors(), express.json(), expressMiddleware(server, {
         context: async ({ req, res }) => {

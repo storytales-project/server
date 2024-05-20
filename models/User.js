@@ -103,6 +103,15 @@ class User {
         return result.modifiedCount > 0;
     }
 
+    static async findByIdAndUpdate(userId, updateData) {
+        const result = await this.collection().updateOne(
+            { _id: new ObjectId(String(userId)) },
+            { $set: updateData }
+        );
+
+        return result.modifiedCount > 0;
+    }
+
     static async logoutUser(userId) {
         const result = await this.collection().updateOne(
           { _id: new ObjectId(String(userId)) },
