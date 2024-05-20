@@ -1,7 +1,8 @@
-const { GraphQLError }  = require("graphql");
+const { GraphQLError } = require("graphql");
 const User = require("../models/User");
 const { hashPassword, validatePassword } = require("../helpers/bcrypt");
 const { createToken } = require("../helpers/jwt");
+const midtransClient = require('midtrans-client');
 
 const typeDefs = `#graphql
     type User {
@@ -26,17 +27,26 @@ const typeDefs = `#graphql
         password : String
     }
 
+    input TopUpCredit {
+        userId : ID
+        credit : Int
+    }
+
     type Query {
         getUserById(id : ID) : User
         getUserByUsername(username : String) : User
         getUserByEmail(email : String) : User
+        getProfile(userId : ID) : User
     }
 
     type Mutation {
         addUser(newUser : NewUser) : User
         loginUser(login : Login) : Token
+        updateProfile(userId : ID, profile : NewUser) : User
+        topUpCredit(topUp : TopUpCredit) : String
+        logoutUser(userId : ID) : String
     }
-`
+`;
 
 const resolvers = {
     Query : {
@@ -65,10 +75,19 @@ const resolvers = {
             } catch (error) {
                 throw error
             }
+        },
+        
+        getProfile: async (_, args) => {
+            try {
+                const user = await User.findById(args.userId);
+                return user;
+            } catch (error) {
+                throw error
+            }
         }
     },
 
-    Mutation : {
+    Mutation: {
         addUser: async (_, args) => {
             try {
                 const { email, username, password } = args.newUser;
@@ -148,9 +167,56 @@ const resolvers = {
                     }
                 });
             }
+        },
+
+        updateProfile: async (_, args) => {
+            try {
+                const { userId, profile } = args;
+                const user = await User.updateProfile(userId, profile);
+                return user;
+            } catch (error) {
+                throw error
+            }
+        },
+
+        topUpCredit: async (_, args) => {
+            // Create Snap API instance
+            let snap = new midtransClient.Snap({
+                isProduction: false,
+                serverKey: process.env.MIDTRANS_SERVER_KEY,
+                clientKey: process.env.MIDTRANS_CLIENT_KEY
+            });
+
+            let parameter = {
+                "transaction_details": {
+                    "order_id": "test-transaction-123",
+                    "gross_amount": 50000
+                }, "credit_card": {
+                    "secure": true
+                }
+            };
+
+            snap.createTransaction(parameter)
+                .then((transaction) => {
+                    // transaction redirect_url
+                    console.log("Success", transaction)
+                    let redirectUrl = transaction.redirect_url;
+                    console.log('redirectUrl:', redirectUrl);
+                })
+                .catch((err) => {
+                    console.log('err:', err);
+                });
+        },
+
+        logoutUser: async (_, args) => {
+            try {
+                const user = await User.logoutUser(args.userId);
+                return user;
+            } catch (error) {
+                throw error
+            }
         }
     }
 };
 
 module.exports = { typeDefs, resolvers };
-
