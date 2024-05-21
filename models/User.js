@@ -46,6 +46,11 @@ class User {
         return user;
     }
 
+    static async getProfile(userId) {
+        const user = await this.collection().findOne({ _id: new ObjectId(userId) });
+        return user;
+      }
+
     static async addUser(newUser) {
         const { email, username, password } = newUser;
         const user = await this.collection().insertOne({
@@ -94,22 +99,23 @@ class User {
         return result.modifiedCount > 0;
     }
 
-    static async topUpCredit(userId, amount) {
+    // static async topUpCredit(userId, amount) {
+    //     const result = await this.collection().updateOne(
+    //         { _id: new ObjectId(String(userId)) },
+    //         { $inc: { credit: amount } }
+    //     );
+
+    //     return result.modifiedCount > 0;
+    // }
+
+    static async updateCredit(userId, amount) {
         const result = await this.collection().updateOne(
             { _id: new ObjectId(String(userId)) },
             { $inc: { credit: amount } }
         );
-
+        
         return result.modifiedCount > 0;
-    }
-
-    static async findByIdAndUpdate(userId, updateData) {
-        const result = await this.collection().updateOne(
-            { _id: new ObjectId(String(userId)) },
-            { $set: updateData }
-        );
-
-        return result.modifiedCount > 0;
+        
     }
 
     static async logoutUser(userId) {

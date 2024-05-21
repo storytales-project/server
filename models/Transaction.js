@@ -24,6 +24,14 @@ class Transaction {
         const result = await this.addTransaction(transaction);
         return result;
     }
+
+    static async updateTransaction(transaction) {
+        const result = await this.collection().updateOne(
+            { _id: new ObjectId(String(transaction._id)) },
+            { $set: transaction }
+        );
+        return result;
+    }
 }
 
 module.exports = Transaction;

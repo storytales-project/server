@@ -77,12 +77,13 @@ const resolvers = {
             }
         },
         
-        getProfile: async () => {
+        getProfile: async (_, args, contextValue) => {
             try {
-                const user = await User.getProfile();
-                return user
+                const user = await contextValue.authentication();
+                const profile = await User.findById(user._id);
+                return profile;
             } catch (error) {
-                throw error
+                throw error;
             }
         }
     },
@@ -183,7 +184,7 @@ const resolvers = {
 
             // 1. ambil userId dari headers
             // 2. masukan transaction ke database(userId, amount, status)
-            // 3. id dari poin kedua kirim ke midtrans sebagai ordet_id
+            // 3. id dari poin kedua kirim ke midtrans sebagai order_id
             // 4. return redirectUrl
 
             let snap = new midtransClient.Snap({
@@ -193,8 +194,10 @@ const resolvers = {
             });
         
             const user = await contextValue.authentication();
+            console.log(user, "ini user");
 
             const userId = user._id;
+            console.log(userId, "ini userId");
 
             const newTransaction = { userId, amount: 50000, status: "unpaid"}
 
