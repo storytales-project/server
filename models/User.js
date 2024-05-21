@@ -88,13 +88,13 @@ class User {
     }
 
     static async updateProfile(userId, profile) {
+        const { email, username, imageUrl } = profile;
         const result = await this.collection().updateOne(
-            { _id: new ObjectId(String(userId)) },
-            { $set: profile }
+          { _id: new ObjectId(String(userId)) },
+          { $set: { email, username, imageUrl } }
         );
-
         return result.modifiedCount > 0;
-    }
+      }
 
     // static async topUpCredit(userId, amount) {
     //     const result = await this.collection().updateOne(
