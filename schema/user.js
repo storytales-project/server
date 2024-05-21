@@ -11,6 +11,7 @@ const typeDefs = `#graphql
         email : String
         username : String
         credit : Int
+        imageUrl : String
     }
 
     type Token {
@@ -21,6 +22,7 @@ const typeDefs = `#graphql
         email : String
         username : String
         password : String
+        imageUrl : String
     }
 
     input Login {
@@ -42,7 +44,7 @@ const typeDefs = `#graphql
     type Mutation {
         addUser(newUser : NewUser) : User
         loginUser(login : Login) : Token
-        updateProfile(userId : ID, profile : NewUser) : User
+        updateProfile(profile : NewUser) : String
         topUpCredit : String
         logoutUser(userId : ID) : String
     }
@@ -80,7 +82,8 @@ const resolvers = {
         getProfile: async (_, args, contextValue) => {
             try {
                 const user = await contextValue.authentication();
-                const profile = await User.findById(user._id);
+                const userId = user._id;
+                const profile = await User.findById(userId);
                 return profile;
             } catch (error) {
                 throw error;
@@ -170,15 +173,22 @@ const resolvers = {
             }
         },
 
-        updateProfile: async (_, args) => {
+        updateProfile: async (_, args, contextValue) => {
             try {
-                const { userId, profile } = args;
-                const user = await User.updateProfile(userId, profile);
-                return user;
+              const user = await contextValue.authentication();
+              const userId = user._id;
+              const { profile } = args;
+              const { email, username, imageUrl } = profile;
+              console.log(profile, "ini profile");
+              const update = await User.updateProfile(
+                userId,
+                { email, username, imageUrl }
+              );
+              return update;
             } catch (error) {
-                throw error
+              throw error;
             }
-        },
+          },
 
         topUpCredit: async (_, args, contextValue) => {
 
@@ -194,10 +204,10 @@ const resolvers = {
             });
         
             const user = await contextValue.authentication();
-            console.log(user, "ini user");
+            // console.log(user, "ini user");
 
             const userId = user._id;
-            console.log(userId, "ini userId");
+            // console.log(userId, "ini userId");
 
             const newTransaction = { userId, amount: 50000, status: "unpaid"}
 
