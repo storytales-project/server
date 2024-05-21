@@ -46,7 +46,6 @@ const typeDefs = `#graphql
         loginUser(login : Login) : Token
         updateProfile(profile : NewUser) : String
         topUpCredit : String
-        logoutUser(userId : ID) : String
     }
 `;
 
@@ -235,15 +234,6 @@ const resolvers = {
             console.log('redirectUrl:', redirectUrl);
         
             return redirectUrl;
-        },
-
-        logoutUser: async (_, args) => {
-            try {
-                const user = await User.logoutUser(args.userId);
-                return user;
-            } catch (error) {
-                throw error
-            }
         }
     }
 };

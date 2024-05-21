@@ -114,15 +114,6 @@ class User {
         return result.modifiedCount > 0;
         
     }
-
-    static async logoutUser(userId) {
-        const result = await this.collection().updateOne(
-          { _id: new ObjectId(String(userId)) },
-          { $set: { access_token: null } }
-        );
-      
-        return result.modifiedCount > 0;
-      }
 }
 
 module.exports = User;
