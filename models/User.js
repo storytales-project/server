@@ -10,7 +10,7 @@ class User {
 
     static async findById(id) {
         const userId = new ObjectId(String(id));
-        console.log(userId);
+        // console.log(userId);
 
         const user = await this.collection().aggregate([
             {
@@ -33,6 +33,8 @@ class User {
             }
         ]).toArray();
 
+        // console.log(user);
+
         return user[0];
     }
 
@@ -45,11 +47,6 @@ class User {
         const user = await this.collection().findOne({ email });
         return user;
     }
-
-    static async getProfile(userId) {
-        const user = await this.collection().findOne({ _id: new ObjectId(userId) });
-        return user;
-      }
 
     static async addUser(newUser) {
         const { email, username, password } = newUser;

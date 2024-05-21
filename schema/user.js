@@ -80,7 +80,8 @@ const resolvers = {
         getProfile: async (_, args, contextValue) => {
             try {
                 const user = await contextValue.authentication();
-                const profile = await User.findById(user._id);
+                const userId = user._id;
+                const profile = await User.findById(userId);
                 return profile;
             } catch (error) {
                 throw error;
@@ -194,10 +195,10 @@ const resolvers = {
             });
         
             const user = await contextValue.authentication();
-            console.log(user, "ini user");
+            // console.log(user, "ini user");
 
             const userId = user._id;
-            console.log(userId, "ini userId");
+            // console.log(userId, "ini userId");
 
             const newTransaction = { userId, amount: 50000, status: "unpaid"}
 
