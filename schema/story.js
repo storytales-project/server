@@ -33,6 +33,7 @@ const typeDefs = `#graphql
         getPublicStories : [Story]
         getFavouriteStories : [Story]
         getStoryById(id : ID) : Story
+        getStoryChoices(id : ID) : [String]
     }
 
     input NewStory {
@@ -75,6 +76,13 @@ const resolvers = {
             const stories = await Story.getOwned(user._id);
 
             return stories;
+        },
+        getStoryChoices : async (_, args, contextValue) => {
+            const {id} = args;
+
+            const choices = await Story.getChoices(id);
+
+            return choices;
         }
     },
     Mutation: {

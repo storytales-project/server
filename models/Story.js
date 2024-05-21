@@ -41,6 +41,21 @@ class Story {
         return stories;
     }
 
+    static async getChoices(storyId) {
+        const story = await this.collection().findOne({
+            _id : new ObjectId(String(storyId))
+        });
+
+        if (story.pages.length === 3) {
+            throw new Error("Story has been finished")
+        }
+
+        const currentPage = story.pages[story.pages.length - 1];
+        const choices = currentPage.choices;
+
+        return choices;
+    }
+
     static async addStory(newStory) {
         const stories = this.collection();
         const { character, mood, theme, title, language, userId } = newStory;
