@@ -18,7 +18,7 @@ const typeDefs = `#graphql
     }
 
     type Mutation {
-        addTransaction(newTransaction: NewTransaction): Transaction
+        addTransaction(newTransaction: CreateTransaction!): Transaction
     }
 `;
 

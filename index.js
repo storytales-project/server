@@ -4,6 +4,7 @@ const { startStandaloneServer } = require("@apollo/server/standalone");
 const { GraphQLError } = require("graphql");
 const { typeDefs: typeDefsUser, resolvers: resolversUser } = require("./schema/user");
 const { typeDefs : typeDefsStory, resolvers : resolversStory } = require("./schema/story");
+const { typeDefs : typeDefsTransaction, resolvers : resolversTransaction } = require("./schema/transaction");
 const { database } = require("./config/mongodb");
 const { verifyToken } = require("./helpers/jwt");
 const User = require('./models/User');
@@ -17,8 +18,8 @@ const { expressMiddleware } = require("@apollo/server/express4");
 const httpServer = http.createServer(app);
 
 const server = new ApolloServer({
-    typeDefs: [typeDefsUser, typeDefsStory],
-    resolvers: [resolversUser, resolversStory],
+    typeDefs: [typeDefsUser, typeDefsStory, typeDefsTransaction],
+    resolvers: [resolversUser, resolversStory, resolversTransaction],
     introspection: true,
     plugins: [
         ApolloServerPluginDrainHttpServer({ httpServer }),
