@@ -6,7 +6,7 @@ const User = require("./User");
 class Story {
     static collection() {
         return database.collection("stories");
-    }
+    };
 
     static async getById(id) {
         const story = await this.collection().findOne({
@@ -14,7 +14,7 @@ class Story {
         });
 
         return story;
-    }
+    };
 
     static async getPublic() {
         const agg = [
@@ -27,7 +27,7 @@ class Story {
 
         const stories = await this.collection().aggregate(agg).toArray();
         return stories;
-    }
+    };
 
     static async getOwned(id) {
         const agg = [
@@ -40,7 +40,7 @@ class Story {
 
         const stories = await this.collection().aggregate(agg).toArray();
         return stories;
-    }
+    };
 
     static async getChoices(storyId) {
         const story = await this.collection().findOne({
@@ -55,7 +55,7 @@ class Story {
         const choices = currentPage.choices;
 
         return choices;
-    }
+    };
 
     static async addStory(newStory) {
         try {
@@ -101,7 +101,7 @@ class Story {
         } catch (error) {
             console.log(error);
         }
-    }
+    };
 
     static async continueStory(pick, user) {
         try {
@@ -133,8 +133,9 @@ class Story {
             return newPage;
         } catch (error) {
             console.log(error);
+            throw(error);
         }
-    }
+    };
 
     static async addLike(user, postId) {
         const stories = this.collection();
@@ -157,6 +158,36 @@ class Story {
         );
 
         return newLike;
+    };
+
+    static async setPublic(storyId, user) {
+        try {
+            const stories = this.collection();
+            const story = await this.getById(storyId);
+
+            if (String(story.userId) !== String(user._id)) {
+                console.log(String(story.userId), String(user._id), "<<<<<<");
+                throw new Error("You are not authorized");
+            };
+
+            if (story.public === true) {
+                throw new Error("Story already public");
+            }
+
+
+            const result = await stories.updateOne(
+                {_id: new ObjectId(String(storyId))},
+                {$set : { public : true}}
+            );
+
+
+            const updated = this.getById(storyId);
+
+            return updated;
+        } catch (error) {
+            console.log(error);
+            throw(error);
+        }
     }
 }
 

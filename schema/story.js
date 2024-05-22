@@ -54,6 +54,7 @@ const typeDefs = `#graphql
         addStory(newStory : NewStory) : Story
         continueStory(pick : storyPick) : Page
         addLike(postId : ID) : Like
+        setPublic(storyId : ID) : Story
     }
 `;
 
@@ -130,6 +131,14 @@ const resolvers = {
             const newLike = await Story.addLike(user, postId);
 
             return newLike;
+        },
+        setPublic : async (_, args, contextValue) => {
+            const user = await contextValue.authentication();
+            const {storyId} = args;
+
+            const publicStory = await Story.setPublic(storyId, user);
+
+            return publicStory;
         }
     },
 };
