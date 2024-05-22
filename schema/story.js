@@ -99,6 +99,12 @@ const resolvers = {
                 throw new Error("You must fill all the content!")
             };
 
+            console.log(user)
+
+            if (user.credit <= 0) {
+                throw new Error("Not enough credit");
+            };
+
             newStory.userId = user._id;
 
             const result = await Story.addStory(newStory);

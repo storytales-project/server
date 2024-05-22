@@ -1,6 +1,7 @@
 const { ObjectId } = require("mongodb");
 const { database } = require("../config/mongodb");
 const { generateStory, continueStory } = require("../helpers/openai");
+const User = require("./User");
 
 class Story {
     static collection() {
@@ -68,8 +69,6 @@ class Story {
             language,
         });
 
-        console.log(story);
-
         const insert = {
             title: title,
             image: story.imageURL,
@@ -90,6 +89,8 @@ class Story {
         };
 
         const result = await stories.insertOne(insert);
+
+        await User.spendCredit(userId);
 
         insert._id = result.insertedId;
 
