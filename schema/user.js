@@ -46,7 +46,6 @@ const typeDefs = `#graphql
         loginUser(login : Login) : Token
         updateProfile(profile : NewUser) : String
         topUpCredit : String
-        logoutUser(userId : ID) : String
     }
 `;
 
@@ -151,7 +150,7 @@ const resolvers = {
                 const user = { email, username, password };
         
                 user.password = hashPassword(user.password);
-                console.log(user.password)
+                // console.log(user.password)
                 let result = await User.addUser(user);
         
                 return result;
@@ -179,7 +178,7 @@ const resolvers = {
               const userId = user._id;
               const { profile } = args;
               const { email, username, imageUrl } = profile;
-              console.log(profile, "ini profile");
+            //   console.log(profile, "ini profile");
               const update = await User.updateProfile(
                 userId,
                 { email, username, imageUrl }
@@ -230,20 +229,11 @@ const resolvers = {
             };
         
             const createdTransaction = await snap.createTransaction(parameter);
-            console.log("Success", createdTransaction);
+            // console.log("Success", createdTransaction);
             let redirectUrl = createdTransaction.redirect_url;
-            console.log('redirectUrl:', redirectUrl);
+            // console.log('redirectUrl:', redirectUrl);
         
             return redirectUrl;
-        },
-
-        logoutUser: async (_, args) => {
-            try {
-                const user = await User.logoutUser(args.userId);
-                return user;
-            } catch (error) {
-                throw error
-            }
         }
     }
 };
