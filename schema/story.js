@@ -23,7 +23,6 @@ const typeDefs = `#graphql
         pages : [Page]
         character : String
         mood : String
-        likes : [Like]
         public : Boolean
         theme : String
         userId : String
@@ -53,7 +52,6 @@ const typeDefs = `#graphql
     type Mutation {
         addStory(newStory : NewStory) : Story
         continueStory(pick : storyPick) : Page
-        addLike(postId : ID) : Like
         setPublic(storyId : ID) : Story
     }
 `;
@@ -122,15 +120,6 @@ const resolvers = {
             const result = await Story.continueStory(pick, user);
 
             return result;
-        },
-        addLike : async (_, args, contextValue) => {
-            const user = await contextValue.authentication();
-            
-            const {postId} = args;
-
-            const newLike = await Story.addLike(user, postId);
-
-            return newLike;
         },
         setPublic : async (_, args, contextValue) => {
             const user = await contextValue.authentication();
