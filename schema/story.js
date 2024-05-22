@@ -19,6 +19,7 @@ const typeDefs = `#graphql
         _id : ID
         title : String
         image : String
+        description : String
         pages : [Page]
         character : String
         mood : String
@@ -53,6 +54,7 @@ const typeDefs = `#graphql
         addStory(newStory : NewStory) : Story
         continueStory(pick : storyPick) : Page
         addLike(postId : ID) : Like
+        setPublic(storyId : ID) : Story
     }
 `;
 
@@ -99,6 +101,12 @@ const resolvers = {
                 throw new Error("You must fill all the content!")
             };
 
+            console.log(user)
+
+            if (user.credit <= 0) {
+                throw new Error("Not enough credit");
+            };
+
             newStory.userId = user._id;
 
             const result = await Story.addStory(newStory);
@@ -111,7 +119,7 @@ const resolvers = {
 
             const {pick} = args;
 
-            const result = await Story.continueStory(pick);
+            const result = await Story.continueStory(pick, user);
 
             return result;
         },
@@ -123,6 +131,14 @@ const resolvers = {
             const newLike = await Story.addLike(user, postId);
 
             return newLike;
+        },
+        setPublic : async (_, args, contextValue) => {
+            const user = await contextValue.authentication();
+            const {storyId} = args;
+
+            const publicStory = await Story.setPublic(storyId, user);
+
+            return publicStory;
         }
     },
 };

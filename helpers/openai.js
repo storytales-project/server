@@ -21,9 +21,16 @@ async function generateStory(input) {
     const jsonResult = completion.choices[0].message.content;
     const parsed = JSON.parse(jsonResult);
 
-    console.log(parsed);
-
     const story = parsed.story;
+    const descPrompt = `can you make a short 2 sentences description out of this story: ${story}. please match the description with the language of the story`
+
+    const completion2 = await openai.chat.completions.create({
+        messages: [{ role: "system", content: descPrompt }],
+        model: "gpt-4-turbo",
+    });
+    const description = completion2.choices[0].message.content;
+
+    console.log(description)
 
     // 2. Generate Audio
 
@@ -52,7 +59,7 @@ async function generateStory(input) {
 
     const response = await openai.images.generate({
         model: "dall-e-3",
-        prompt: title + "cute, 3D, colorful, disney style",
+        prompt: parsed.chapter + "cute, 3D, colorful, disney style",
         n: 1,
         size: "1024x1024",
     });
@@ -85,6 +92,7 @@ async function generateStory(input) {
 
     return {
         story,
+        description,
         chapter : parsed.chapter,
         choices : parsed.choices,
         audioURL,
