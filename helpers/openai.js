@@ -92,6 +92,7 @@ async function generateStory(input) {
 
     return {
         story,
+        description,
         chapter : parsed.chapter,
         choices : parsed.choices,
         audioURL,

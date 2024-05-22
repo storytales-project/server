@@ -19,6 +19,7 @@ const typeDefs = `#graphql
         _id : ID
         title : String
         image : String
+        description : String
         pages : [Page]
         character : String
         mood : String
@@ -117,7 +118,7 @@ const resolvers = {
 
             const {pick} = args;
 
-            const result = await Story.continueStory(pick);
+            const result = await Story.continueStory(pick, user);
 
             return result;
         },

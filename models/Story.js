@@ -19,8 +19,8 @@ class Story {
     static async getPublic() {
         const agg = [
             {
-                "$match": {
-                    "public" : true,
+                $match: {
+                    public: true,
                 },
             },
         ];
@@ -32,8 +32,8 @@ class Story {
     static async getOwned(id) {
         const agg = [
             {
-                "$match": {
-                    "userId" : id,
+                $match: {
+                    userId: id,
                 },
             },
         ];
@@ -44,11 +44,11 @@ class Story {
 
     static async getChoices(storyId) {
         const story = await this.collection().findOne({
-            _id : new ObjectId(String(storyId))
+            _id: new ObjectId(String(storyId)),
         });
 
         if (story.pages.length === 3) {
-            throw new Error("Story has been finished")
+            throw new Error("Story has been finished");
         }
 
         const currentPage = story.pages[story.pages.length - 1];
@@ -58,88 +58,101 @@ class Story {
     }
 
     static async addStory(newStory) {
-        const stories = this.collection();
-        const { character, mood, theme, title, language, userId } = newStory;
+        try {
+            const stories = this.collection();
+            const { character, mood, theme, title, language, userId } =
+                newStory;
 
-        const story = await generateStory({
-            character,
-            mood,
-            theme,
-            title,
-            language,
-        });
+            const story = await generateStory({
+                character,
+                mood,
+                theme,
+                title,
+                language,
+            });
 
-        const insert = {
-            title: title,
-            image: story.imageURL,
-            pages: [
-                {
-                    chapter: story.chapter,
-                    content: story.story,
-                    audio: story.audioURL,
-                    choices: story.choices,
-                },
-            ],
-            character: character,
-            mood: mood,
-            likes: [],
-            public: false,
-            theme: theme,
-            userId: userId,
-        };
+            const insert = {
+                title: title,
+                image: story.imageURL,
+                description : story.description,
+                pages: [
+                    {
+                        chapter: story.chapter,
+                        content: story.story,
+                        audio: story.audioURL,
+                        choices: story.choices,
+                    },
+                ],
+                character: character,
+                mood: mood,
+                likes: [],
+                public: false,
+                theme: theme,
+                userId: userId,
+            };
 
-        const result = await stories.insertOne(insert);
+            const result = await stories.insertOne(insert);
 
-        await User.spendCredit(userId);
+            await User.spendCredit(userId);
 
-        insert._id = result.insertedId;
+            insert._id = result.insertedId;
 
-        return insert;
+            return insert;
+        } catch (error) {
+            console.log(error);
+        }
     }
 
-    static async continueStory(pick) {
-        const stories = this.collection();
-        const story = await this.getById(pick.storyId);
-        const pages = story.pages;
+    static async continueStory(pick, user) {
+        try {
+            const stories = this.collection();
+            const story = await this.getById(pick.storyId);
+            const pages = story.pages;
 
-        const newPage = await continueStory(pick, pages);
-
-        console.log(newPage);
-
-        const result = await stories.updateOne(
-            { _id: story._id },
-            {
-                $push: {
-                    pages: {
-                        chapter: newPage.chapter,
-                        content: newPage.content,
-                        audio: newPage.audio,
-                        choices: newPage.choices,
-                    },
-                },
+            if (String(story.userId) !== String(user._id)) {
+                console.log(String(story.userId), String(user._id), "<<<<<<");
+                throw new Error("You are not authorized");
             }
-        );
 
-        return newPage;
-    };
+            const newPage = await continueStory(pick, pages);
+
+            const result = await stories.updateOne(
+                { _id: story._id },
+                {
+                    $push: {
+                        pages: {
+                            chapter: newPage.chapter,
+                            content: newPage.content,
+                            audio: newPage.audio,
+                            choices: newPage.choices,
+                        },
+                    },
+                }
+            );
+
+            return newPage;
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     static async addLike(user, postId) {
         const stories = this.collection();
         const story = await this.getById(postId);
 
         const newLike = {
-            userId : user._id,
-            username : user.username,
-            createdAt : new Date(),
-            updatedAt : new Date()
+            userId: user._id,
+            username: user.username,
+            createdAt: new Date(),
+            updatedAt: new Date(),
         };
 
         const result = await stories.updateOne(
-            {_id : story._id},
+            { _id: story._id },
             {
-                $push : {
-                    likes : newLike
-                }
+                $push: {
+                    likes: newLike,
+                },
             }
         );
 
